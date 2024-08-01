@@ -42,7 +42,7 @@ fun ProviderRatingsReviewsScreen(navController: NavController, floatingButtonVie
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .background(Color(0xFF2C2C2E))
+                    .background(Color.White)
             ) {
                 ProviderRatingsReviewsContent()
             }
@@ -73,7 +73,7 @@ fun ProviderRatingsReviewsContent() {
         // Reseñas anteriores
         Spacer(modifier = Modifier.height(16.dp))
         Text(text = "Reseñas", fontSize = 20.sp, color = Color.Black)
-        ProviderReviewList()  // Cambié el nombre aquí
+        ProviderReviewList()
     }
 }
 
@@ -94,7 +94,7 @@ fun RatingBar(rating: Float, onRatingChanged: (Int) -> Unit = {}) {
 }
 
 @Composable
-fun ProviderReviewList() {  // Cambié el nombre aquí
+fun ProviderReviewList() {
     Column {
         repeat(5) { index ->
             Card(

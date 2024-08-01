@@ -89,7 +89,7 @@ fun UserRatingsReviewsContent(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(
             onClick = {
-                // Implementar lógica de envío de reseña
+                // Luego impl cód para el envio a la bd
                 navController.popBackStack()
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA726)),
@@ -102,12 +102,12 @@ fun UserRatingsReviewsContent(navController: NavController) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(text = "Calificaciones del Vendedor", fontSize = 20.sp, color = Color.Black)
         RatingBar(rating = 4.5f)
-        UserReviewList()  // Cambié el nombre aquí
+        UserReviewList()
     }
 }
 
 @Composable
-fun UserReviewList() {  // Cambié el nombre aquí
+fun UserReviewList() {
     Column {
         repeat(5) { index ->
             Card(

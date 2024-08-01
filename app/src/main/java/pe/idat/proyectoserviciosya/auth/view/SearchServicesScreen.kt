@@ -117,7 +117,7 @@ fun SearchBar() {
         label = { Text("Search") },
         leadingIcon = {
             Icon(
-                painter = painterResource(id = R.drawable.ic_search), // Reemplaza con el ícono correcto
+                painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = "Search Icon",
                 modifier = Modifier.size(24.dp)
             )

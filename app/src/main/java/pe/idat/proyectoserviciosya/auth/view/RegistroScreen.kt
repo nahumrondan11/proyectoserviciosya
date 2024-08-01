@@ -24,7 +24,7 @@ import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.viewmodel.LoginViewModel
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun RegistroScreen(navController: NavController) {
     Scaffold {
@@ -39,7 +39,7 @@ fun RegistroScreen(navController: NavController) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun RegistroContent(navController: NavController) {
     Column(
@@ -50,7 +50,7 @@ fun RegistroContent(navController: NavController) {
             .padding(16.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.logo_serviciosya), // Asegúrate de tener el logo correcto en los recursos
+            painter = painterResource(id = R.drawable.logo_serviciosya),
             contentDescription = "Logo",
             modifier = Modifier.size(100.dp)
         )
@@ -68,7 +68,7 @@ fun RegistroContent(navController: NavController) {
         )
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campos de texto para la información de registro
+        // valores de texto para la información de los registro
         var nombreCompleto by remember { mutableStateOf("") }
         var correo by remember { mutableStateOf("") }
         var nombreUsuario by remember { mutableStateOf("") }
@@ -88,7 +88,7 @@ fun RegistroContent(navController: NavController) {
 
         // Botón de registro
         Button(
-            onClick = { /* Implement registration logic */ },
+            onClick = { /* Imp */ },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA726)),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
         ) {

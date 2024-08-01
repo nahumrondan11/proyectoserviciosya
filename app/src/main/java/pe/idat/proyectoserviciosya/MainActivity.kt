@@ -133,6 +133,12 @@ fun AppNavigation(navController: NavHostController, floatingButtonViewModel: Flo
         composable(Ruta.NOTIFICACIONES_SCREEN) {
             NotificationsScreen(navController, floatingButtonViewModel)
         }
+        composable(Ruta.UPDATEINFUSER_SCREEN){
+            UpdateInfUserScreen(navController)
+        }
+        composable(Ruta.EDIRADDSERVICE_SCREEN){
+            EditAddServicesScreen(navController)
+        }
     }
 }
 

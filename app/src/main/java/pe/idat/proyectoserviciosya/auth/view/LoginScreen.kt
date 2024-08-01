@@ -28,7 +28,7 @@ import pe.idat.proyectoserviciosya.auth.viewmodel.LoginViewModel
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     val snackbarHostState = remember {
@@ -51,7 +51,7 @@ fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun LoginContent(
     navController: NavController,
@@ -123,7 +123,7 @@ fun LoginContent(
         Text(
             text = "¿Olvidaste tu contraseña?",
             color = Color.White,
-            modifier = Modifier.clickable { /* Implement forgot password logic */ }
+            modifier = Modifier.clickable { /*  */ }
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -143,7 +143,7 @@ fun EmailField(value: String, onValueChange: (String) -> Unit) {
         label = { Text("Correo electrónico") },
         leadingIcon = {
             Icon(
-                painter = painterResource(id = R.drawable.ic_email), // Reemplaza con el ícono correcto
+                painter = painterResource(id = R.drawable.ic_email),
                 contentDescription = "Email Icon"
             )
         },

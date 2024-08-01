@@ -10,5 +10,7 @@ object Ruta {
     const val VER_CAL_RES_SCREEN = "ProviderRatingsReviewsScreen"
     const val CALIF_SCREEN = "UserRatingsReviewsScreen"
     const val NOTIFICACIONES_SCREEN = "NotificationsScreen"
+    const val UPDATEINFUSER_SCREEN = "UpdateInfoUserScreen"
+    const val EDIRADDSERVICE_SCREEN ="EditAddServiceScreen"
 
 }

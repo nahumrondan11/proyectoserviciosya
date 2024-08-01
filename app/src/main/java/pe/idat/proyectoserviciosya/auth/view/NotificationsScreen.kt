@@ -57,7 +57,7 @@ fun NotificationsScreen(navController: NavController, floatingButtonViewModel: F
                 modifier = Modifier.background(Color.White)
             ) {
                 Button(
-                    onClick = { /* Implementar lógica de configuración de notificaciones */ },
+                    onClick = { /* revisar luego la implementación de la config */ },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA726)),
                     modifier = Modifier
                         .fillMaxWidth()

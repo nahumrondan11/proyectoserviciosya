@@ -111,7 +111,7 @@ fun ProviderProfileContent() {
     ) {
         // Imagen de perfil
         Image(
-            painter = painterResource(id = R.drawable.profile_picture), // Reemplaza con el ID correcto de la imagen
+            painter = painterResource(id = R.drawable.profile_picture), // Luego Reemp con el ID correcto de la imagen
             contentDescription = "Foto de perfil",
             contentScale = ContentScale.Crop,
             modifier = Modifier

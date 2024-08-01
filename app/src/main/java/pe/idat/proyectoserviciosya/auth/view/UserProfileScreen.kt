@@ -30,7 +30,7 @@ fun UserProfileScreen(navController: NavController, floatingButtonViewModel: Flo
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil de Usuario") },
+                title = { Text("Perfil de Usuario", color = Color.White) },
                 actions = {
                     var expanded by remember { mutableStateOf(false) }
 
@@ -47,12 +47,12 @@ fun UserProfileScreen(navController: NavController, floatingButtonViewModel: Flo
                             onClick = { navController.navigate(Ruta.VER_CAL_RES_SCREEN) }
                         )
                         DropdownMenuItem(
-                            text = { Text("Editar Nombres y Apellidos") },
-                            onClick = { /* Implement navigation to edit names screen */ }
+                            text = { Text("Actualizar Datos") },
+                            onClick = { navController.navigate(Ruta.UPDATEINFUSER_SCREEN)}
                         )
                         DropdownMenuItem(
                             text = { Text("Editar Servicios") },
-                            onClick = { }
+                            onClick = { navController.navigate(Ruta.EDIRADDSERVICE_SCREEN)}
                         )
                         DropdownMenuItem(
                             text = { Text("Buscar Servicios") },
@@ -100,7 +100,7 @@ fun UserProfileContent() {
     ) {
         // Imagen de perfil
         Image(
-            painter = painterResource(id = R.drawable.profile_picture), // Luego reemplazar con el ID correcto de la imagen
+            painter = painterResource(id = R.drawable.profile_picture), // Temp Luego reemplazar con el ID correcto de la imagen BD
             contentDescription = "Foto de perfil",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -137,10 +137,10 @@ fun UserDetailGrid() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        UserDetailItem(label = "Correo Electrónico", value = "usuario@example.com")
-        UserDetailItem(label = "Número de Teléfono", value = "+123 456 7890")
-        UserDetailItem(label = "Dirección", value = "123 Calle Principal, Ciudad")
-        // Agrega más detalles si es necesario
+        UserDetailItem(label = "Correo Electrónico", value = "usuario@idat.com")
+        UserDetailItem(label = "Número de Teléfono", value = "+56 7890")
+        UserDetailItem(label = "Dirección", value = "Barrios Altos")
+
     }
 }
 
