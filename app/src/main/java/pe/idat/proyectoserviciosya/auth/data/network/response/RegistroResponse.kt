@@ -1,4 +1,6 @@
 package pe.idat.proyectoserviciosya.auth.data.network.response
 
-class RegistroResponse {
-}
+data class RegistroResponse(
+    val mensaje: String,
+    val idusuario: Int
+)

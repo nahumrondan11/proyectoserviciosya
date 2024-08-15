@@ -2,7 +2,6 @@ package pe.idat.proyectoserviciosya.auth.view
 
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,45 +109,52 @@ fun SearchServicesScreen(navController: NavController, floatingButtonViewModel: 
 fun SearchBar() {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    OutlinedTextField(
-        value = searchQuery,
-        onValueChange = { searchQuery = it },
-        label = { Text("Search") },
-        leadingIcon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = "Search Icon",
-                modifier = Modifier.size(24.dp)
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    )
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            label = { Text("Ingrese su búsqueda") },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_search),
+                    contentDescription = "Search Icon",
+                    modifier = Modifier.size(24.dp)
+                )
+            },
+            textStyle = LocalTextStyle.current.copy(color = Color.White),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
 fun Filters() {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+    var selectedCategory by remember { mutableStateOf("Categoría") }
+    var location by remember { mutableStateOf(TextFieldValue("")) }
+    var priceRange by remember { mutableStateOf(0f) }
+
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)) {
         // Categoría
-        var selectedCategory by remember { mutableStateOf("Categoría") }
         DropdownMenuSample(selectedCategory) { selectedCategory = it }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Ubicación
-        var location by remember { mutableStateOf(TextFieldValue("")) }
         OutlinedTextField(
             value = location,
             onValueChange = { location = it },
             label = { Text("Ubicación") },
+            textStyle = LocalTextStyle.current.copy(color = Color.White),
             modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Rango de precios
-        var priceRange by remember { mutableStateOf(0f) }
         Text(text = "Rango de precios: ${priceRange.toInt()}", color = Color.Gray)
         Slider(
             value = priceRange,
@@ -158,6 +163,13 @@ fun Filters() {
             steps = 5,
             modifier = Modifier.fillMaxWidth()
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Botón de búsqueda
+        Button(onClick = { /* Acción de búsqueda futura */ }, modifier = Modifier.align(Alignment.End)) {
+            Text("Buscar")
+        }
     }
 }
 
@@ -166,7 +178,9 @@ fun DropdownMenuSample(selectedCategory: String, onCategorySelected: (String) ->
     var expanded by remember { mutableStateOf(false) }
     val categories = listOf("Categoría 1", "Categoría 2", "Categoría 3", "Categoría 4")
 
-    Box(modifier = Modifier.fillMaxWidth().background(Color.White)) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .background(Color.White)) {
         Text(
             text = selectedCategory,
             modifier = Modifier

@@ -13,21 +13,3 @@ import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavController
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
-
-@Composable
-fun CustomTopAppBar(
-    title: String,
-    floatingButtonViewModel: FloatingButtonViewModel,
-    navController: NavController? = null
-) {
-    TopAppBar(
-        title = { Text(title) },
-        actions = {
-            IconButton(onClick = { floatingButtonViewModel.hideButton() }) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFFA726))
-    )
-}

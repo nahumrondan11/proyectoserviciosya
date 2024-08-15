@@ -1,4 +1,6 @@
 package pe.idat.proyectoserviciosya.auth.data.network.request
 
-class LoginRequest {
-}
+data class LoginRequest (
+    val correoelectronico:String,
+    val contrasena:String
+)

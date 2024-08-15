@@ -27,8 +27,6 @@ import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.viewmodel.LoginViewModel
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
-
-
 @Composable
 fun LoginScreen(navController: NavController, loginViewModel: LoginViewModel) {
     val snackbarHostState = remember {
@@ -60,6 +58,16 @@ fun LoginContent(
     coroutineScope: CoroutineScope
 ) {
     val scope = rememberCoroutineScope()
+    val loginResult by loginViewModel.loginResult.observeAsState()
+
+    LaunchedEffect(loginResult) {
+        if (loginResult == true) {
+            navController.navigate(Ruta.MAIN_SEARCH_SCREEN)
+        } else if (loginResult == false) {
+            state.showSnackbar("Usuario y/o password incorrecto")
+        }
+    }
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -68,7 +76,7 @@ fun LoginContent(
             .padding(16.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.logo_serviciosya), // logo correcto en los recursos
+            painter = painterResource(id = R.drawable.logo_serviciosya),
             contentDescription = "Logo",
             modifier = Modifier.size(100.dp)
         )
@@ -100,17 +108,7 @@ fun LoginContent(
 
         Button(
             onClick = {
-                if (loginViewModel.validarcredenciales(usuario, password)) {
-                    navController.navigate(Ruta.MAIN_SEARCH_SCREEN)
-                } else {
-                    scope.launch {
-                        state.showSnackbar(
-                            message = "Usuario y/o password incorrecto",
-                            actionLabel = "OK",
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                }
+                loginViewModel.validarcredenciales()
             },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA726)),
             modifier = Modifier
@@ -140,28 +138,16 @@ fun EmailField(value: String, onValueChange: (String) -> Unit) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Correo electrónico") },
-        leadingIcon = {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_email),
-                contentDescription = "Email Icon"
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp),
+        label = { Text("Correo electrónico", color = Color.White) },
         colors = TextFieldDefaults.outlinedTextFieldColors(
-            unfocusedBorderColor = Color.Gray,
             focusedBorderColor = Color.White,
-            focusedTextColor = Color.White,
-            cursorColor = Color.White,
-            focusedLabelColor = Color.White,
-            unfocusedLabelColor = Color.Gray,
-            focusedLeadingIconColor = Color.White,
-            focusedTrailingIconColor = Color.White,
-            unfocusedLeadingIconColor = Color.Gray,
-            unfocusedTrailingIconColor = Color.Gray
-        )
+            unfocusedBorderColor = Color.Gray,
+            focusedLabelColor  = Color.White,
+            cursorColor = Color.White
+        ),
+        textStyle = LocalTextStyle.current.copy(color = Color.White),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -169,30 +155,26 @@ fun EmailField(value: String, onValueChange: (String) -> Unit) {
 @Composable
 fun PasswordField(value: String, onValueChange: (String) -> Unit) {
     var passwordVisible by remember { mutableStateOf(false) }
+    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text("Contraseña") },
+        label = { Text("Contraseña", color = Color.White) },
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor = Color.White,
+            unfocusedBorderColor = Color.Gray,
+            focusedLabelColor  = Color.White,
+            cursorColor = Color.White
+        ),
+        textStyle = LocalTextStyle.current.copy(color = Color.White),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            val image = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(imageVector = image, contentDescription = "Toggle Password Visibility")
+                Icon(imageVector = icon, contentDescription = null)
             }
         },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp),
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            unfocusedBorderColor = Color.Gray,
-            focusedBorderColor = Color.White,
-            focusedTextColor = Color.White,
-            cursorColor = Color.White,
-            focusedLabelColor = Color.White,
-            unfocusedLabelColor = Color.Gray,
-            focusedTrailingIconColor = Color.White,
-            unfocusedTrailingIconColor = Color.Gray
-        )
+        modifier = Modifier.fillMaxWidth()
     )
 }
