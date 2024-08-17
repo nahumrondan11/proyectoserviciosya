@@ -1,9 +1,8 @@
 package pe.idat.proyectoserviciosya.auth.view
 
-
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -18,25 +17,45 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
+import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
+import pe.idat.proyectoserviciosya.auth.data.network.response.ServiceDetails
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProviderProfileScreen(navController: NavController, floatingButtonViewModel: FloatingButtonViewModel) {
+fun ProviderProfileScreen(
+    navController: NavController,
+    idServicio: Int,
+    floatingButtonViewModel: FloatingButtonViewModel,
+    serviciosViewModel: ServiciosViewModel = viewModel()
+) {
     var expanded by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
-    // Mostrar el botón flotante cuando se carga la pantalla
-    LaunchedEffect(Unit) {
+    // Estado para guardar los detalles del servicio
+    var serviceDetails by remember { mutableStateOf<ServiceDetails?>(null) }
+
+    LaunchedEffect(idServicio) {
         floatingButtonViewModel.showButton()
+
+        Log.d("ProviderProfileScreen", "Fetching service details for id $idServicio")
+
+        // Llamada al API para obtener los detalles del servicio
+        serviceDetails = serviciosViewModel.getDetalleServicio(idServicio)
+        Log.d("ProviderProfileScreen", "Detalles obtenidos: $serviceDetails")
     }
+
+
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil del Proveedor") },
+                title = { Text("Detalle del Servicio") },
                 actions = {
                     IconButton(onClick = { expanded = true }) {
                         Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu")
@@ -78,7 +97,9 @@ fun ProviderProfileScreen(navController: NavController, floatingButtonViewModel:
                     .background(Color(0xFF2C2C2E))
                     .padding(paddingValues)
             ) {
-                ProviderProfileContent()
+                serviceDetails?.let { details ->
+                    ProviderProfileContent(details)
+                } ?: Text(text = "Cargando...", color = Color.White, modifier = Modifier.align(Alignment.Center))
             }
         },
         bottomBar = {
@@ -87,7 +108,7 @@ fun ProviderProfileScreen(navController: NavController, floatingButtonViewModel:
                 modifier = Modifier.background(Color(0xFF2C2C2E))
             ) {
                 Button(
-                    onClick = { navController.navigate(Ruta.PAGO_SCREEN) },
+                    onClick = { navController.navigate("${Ruta.PAGO_SCREEN}/${idServicio}") },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFFA726)),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -101,7 +122,7 @@ fun ProviderProfileScreen(navController: NavController, floatingButtonViewModel:
 }
 
 @Composable
-fun ProviderProfileContent() {
+fun ProviderProfileContent(serviceDetails: ServiceDetails) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
@@ -111,7 +132,7 @@ fun ProviderProfileContent() {
     ) {
         // Imagen de perfil
         Image(
-            painter = painterResource(id = R.drawable.profile_picture), // Luego Reemp con el ID correcto de la imagen
+            painter = painterResource(id = R.drawable.profile_picture),
             contentDescription = "Foto de perfil",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -122,25 +143,19 @@ fun ProviderProfileContent() {
 
         // Nombre del proveedor
         Text(
-            text = "SERVICIOSYA",
+            text = serviceDetails.nombreUsuario,
             color = Color.White,
             fontSize = 24.sp
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Provider",
-            color = Color.Gray,
-            fontSize = 16.sp
         )
         Spacer(modifier = Modifier.height(32.dp))
 
         // Tabla de detalles del proveedor
-        ProviderDetailGrid()
+        ProviderDetailGrid(serviceDetails)
     }
 }
 
 @Composable
-fun ProviderDetailGrid() {
+fun ProviderDetailGrid(serviceDetails: ServiceDetails) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
@@ -148,10 +163,10 @@ fun ProviderDetailGrid() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        ProviderDetailItem(label = "Categoría de Servicios", value = "Electricista")
-        ProviderDetailItem(label = "Descripción", value = "Servicios eléctricos generales y reparaciones.")
-        ProviderDetailItem(label = "Tarifas", value = "$50 por hora")
-        ProviderDetailItem(label = "Disponibilidad (días y horas)", value = "Lunes a Viernes, 9 AM - 6 PM")
+        ProviderDetailItem(label = "Categoría de Servicios", value = serviceDetails.categoria)
+        ProviderDetailItem(label = "Descripción", value = serviceDetails.descripcion)
+        ProviderDetailItem(label = "Tarifas", value = "$${serviceDetails.tarifa} por hora")
+        ProviderDetailItem(label = "Disponibilidad", value = serviceDetails.disponibilidad)
     }
 }
 
@@ -172,6 +187,6 @@ fun ProviderDetailItem(label: String, value: String) {
             color = Color.White,
             fontSize = 16.sp
         )
-        HorizontalDivider(color = Color.Gray, thickness = 1.dp)
+        Divider(color = Color.Gray, thickness = 1.dp)
     }
 }

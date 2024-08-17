@@ -3,8 +3,6 @@ package pe.idat.proyectoserviciosya.auth.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import pe.idat.proyectoserviciosya.auth.data.network.request.RegistroRequest
 import pe.idat.proyectoserviciosya.auth.data.network.response.Departamento
 import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentosResponse
@@ -27,6 +25,7 @@ class RegistroViewModel : ViewModel() {
 
     private val _registroResult = MutableLiveData<Boolean>()
     val registroResult: LiveData<Boolean> = _registroResult
+
 
     fun obtenerPaises() {
         RetrofitClient.apiService.obtenerPaises().enqueue(object : Callback<PaisesResponse> {
@@ -70,4 +69,6 @@ class RegistroViewModel : ViewModel() {
             }
         })
     }
+
+
 }

@@ -1,5 +1,6 @@
 package pe.idat.proyectoserviciosya.auth.view
 
+import android.util.Log
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
 import androidx.compose.foundation.Image
@@ -21,20 +22,39 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
+import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
+import pe.idat.proyectoserviciosya.auth.data.network.response.Categoria
+import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentoSer
+import pe.idat.proyectoserviciosya.core.dataclass.Servicio
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchServicesScreen(navController: NavController, floatingButtonViewModel: FloatingButtonViewModel) {
+fun SearchServicesScreen(
+    navController: NavController,
+    floatingButtonViewModel: FloatingButtonViewModel,
+    serviciosViewModel: ServiciosViewModel = viewModel(),
+
+) {
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val serviciosFiltrados by serviciosViewModel.serviciosFiltrados.observeAsState(emptyList())
+    val categorias by serviciosViewModel.categorias.observeAsState(emptyList())
+    val departamentos by serviciosViewModel.departamentoser.observeAsState(emptyList())
+
+    var nombreBusqueda by remember { mutableStateOf("") }
+    var categoriaSeleccionada by remember { mutableStateOf<Categoria?>(null) }
+    var departamentoSeleccionado by remember { mutableStateOf<DepartamentoSer?>(null) }
+    var precioMinimo by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
         floatingButtonViewModel.showButton()
+        serviciosViewModel.obtenerServiciosNoEliminados()
     }
 
     Scaffold(
@@ -94,11 +114,39 @@ fun SearchServicesScreen(navController: NavController, floatingButtonViewModel: 
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    SearchBar()
+                    SearchBar(
+                        nombreBusqueda = nombreBusqueda,
+                        onSearchQueryChange = { nombreBusqueda = it }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Filters()
+                    Filters(
+                        categorias = categorias,
+                        categoriaSeleccionada = categoriaSeleccionada,
+                        onCategoriaChange = { categoriaSeleccionada = it },
+                        departamentos = departamentos,
+                        departamentoSeleccionado = departamentoSeleccionado,
+                        onDepartamentoChange = { departamentoSeleccionado = it },
+                        precioMinimo = precioMinimo,
+                        onPrecioChange = { precioMinimo = it }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    ServiceResults(navController)
+                    Button(onClick = {
+                        if (departamentoSeleccionado == null) {
+                            Log.e("SearchServicesScreen", "No se seleccionó ningún departamento")
+                        } else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            {
+                            Log.d("SearchServicesScreen", "ID de Departamento Seleccionado: ${departamentoSeleccionado!!.id}")
+                        }
+                        serviciosViewModel.buscarServicios(
+                            nombreBusqueda,
+                            categoriaSeleccionada?.id,
+                            departamentoSeleccionado?.id,
+                            precioMinimo
+                        )
+                    }) {
+                        Text("Buscar")
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    ServiceResults(navController, serviciosFiltrados)
                 }
             }
         }
@@ -106,86 +154,103 @@ fun SearchServicesScreen(navController: NavController, floatingButtonViewModel: 
 }
 
 @Composable
-fun SearchBar() {
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp)) {
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            label = { Text("Ingrese su búsqueda") },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = "Search Icon",
-                    modifier = Modifier.size(24.dp)
-                )
-            },
-            textStyle = LocalTextStyle.current.copy(color = Color.White),
-            modifier = Modifier.fillMaxWidth()
-        )
+fun ServiceResults(navController: NavController, servicios: List<Servicio>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp)
+    ) {
+        items(servicios) { servicio ->
+            ServiceItem(navController, servicio)
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
+}
+@Composable
+fun SearchBar(nombreBusqueda: String, onSearchQueryChange: (String) -> Unit) {
+    OutlinedTextField(
+        value = nombreBusqueda,
+        onValueChange = onSearchQueryChange,
+        label = { Text("Ingrese su búsqueda") },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = "Search Icon",
+                modifier = Modifier.size(24.dp)
+            )
+        },
+        textStyle = LocalTextStyle.current.copy(color = Color.White),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    )
 }
 
 @Composable
-fun Filters() {
-    var selectedCategory by remember { mutableStateOf("Categoría") }
-    var location by remember { mutableStateOf(TextFieldValue("")) }
-    var priceRange by remember { mutableStateOf(0f) }
-
+fun Filters(
+    categorias: List<Categoria>,
+    categoriaSeleccionada: Categoria?,
+    onCategoriaChange: (Categoria) -> Unit,
+    departamentos: List<DepartamentoSer>,
+    departamentoSeleccionado: DepartamentoSer?,
+    onDepartamentoChange: (DepartamentoSer) -> Unit,
+    precioMinimo: Float,
+    onPrecioChange: (Float) -> Unit
+) {
     Column(modifier = Modifier
         .fillMaxWidth()
-        .padding(horizontal = 16.dp)) {
-        // Categoría
-        DropdownMenuSample(selectedCategory) { selectedCategory = it }
+        .padding(horizontal = 10.dp)) {
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Ubicación
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            label = { Text("Ubicación") },
-            textStyle = LocalTextStyle.current.copy(color = Color.White),
-            modifier = Modifier.fillMaxWidth()
+        // Selección de Categoría
+        DropdownMenuSample(
+            selectedCategory = categoriaSeleccionada?.nombre ?: "Categoría",
+            items = categorias.map { it.nombre },
+            onItemSelected = { nombre ->
+                val categoria = categorias.firstOrNull { it.nombre == nombre }
+                categoria?.let { onCategoriaChange(it) }
+            }
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        // Rango de precios
-        Text(text = "Rango de precios: ${priceRange.toInt()}", color = Color.Gray)
-        Slider(
-            value = priceRange,
-            onValueChange = { priceRange = it },
-            valueRange = 0f..1000f,
-            steps = 5,
-            modifier = Modifier.fillMaxWidth()
+        // Selección de Departamento
+        DropdownMenuSample(
+            selectedCategory = departamentoSeleccionado?.nombre ?: "Departamento",
+            items = departamentos.map { it.nombre },
+            onItemSelected = { nombre ->
+                val departamento = departamentos.firstOrNull { it.nombre == nombre }
+                departamento?.let { onDepartamentoChange(it) }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Botón de búsqueda
-        Button(onClick = { /* Acción de búsqueda futura */ }, modifier = Modifier.align(Alignment.End)) {
-            Text("Buscar")
-        }
+        Text(text = "Rango de precios: ${precioMinimo.toInt()}", color = Color.Gray)
+        Slider(
+            value = precioMinimo,
+            onValueChange = onPrecioChange,
+            valueRange = 1f..1000f,
+            steps = 5,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 
 @Composable
-fun DropdownMenuSample(selectedCategory: String, onCategorySelected: (String) -> Unit) {
+fun DropdownMenuSample(
+    selectedCategory: String,
+    items: List<String>,
+    onItemSelected: (String) -> Unit
+) {
     var expanded by remember { mutableStateOf(false) }
-    val categories = listOf("Categoría 1", "Categoría 2", "Categoría 3", "Categoría 4")
 
     Box(modifier = Modifier
         .fillMaxWidth()
-        .background(Color.White)) {
+        .background(Color.White)
+        .clickable { expanded = true }) {
         Text(
             text = selectedCategory,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { expanded = true }
                 .padding(16.dp),
             color = Color.Gray
         )
@@ -193,11 +258,11 @@ fun DropdownMenuSample(selectedCategory: String, onCategorySelected: (String) ->
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            categories.forEach { category ->
+            items.forEach { item ->
                 DropdownMenuItem(
-                    text = { Text(category) },
+                    text = { Text(item) },
                     onClick = {
-                        onCategorySelected(category)
+                        onItemSelected(item)
                         expanded = false
                     }
                 )
@@ -206,25 +271,14 @@ fun DropdownMenuSample(selectedCategory: String, onCategorySelected: (String) ->
     }
 }
 
-@Composable
-fun ServiceResults(navController: NavController) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        items(10) { index ->
-            ServiceItem(navController)
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-}
+
 
 @Composable
-fun ServiceItem(navController: NavController) {
+fun ServiceItem(navController: NavController, servicio: Servicio) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.navigate(Ruta.PROVIDER_PROFILE_SCREEN) },
+            .clickable { navController.navigate("${Ruta.PROVIDER_PROFILE_SCREEN}/${servicio.idServicio}") },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
@@ -233,7 +287,7 @@ fun ServiceItem(navController: NavController) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = R.drawable.profile_picture), // luego reemp con el ID correcto de la imagen
+                painter = painterResource(id = R.drawable.profile_picture), // Reemplaza con la imagen correcta
                 contentDescription = "Foto de perfil",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -243,34 +297,34 @@ fun ServiceItem(navController: NavController) {
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Nombre del Proveedor",
+                    text = servicio.nombreUsuario,
                     color = Color.Black,
                     fontSize = 18.sp
                 )
                 Text(
-                    text = "Categoría del servicio",
+                    text = servicio.nombreServicio,
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "Ubicación",
+                    text = servicio.ubicacion,
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "$ Precio del servicio",
+                    text = "$ ${servicio.precio}",
                     color = Color.Black,
                     fontSize = 14.sp
                 )
                 Text(
-                    text = "Calificación: ★★★★☆",
+                    text = "Calificación: ${"★".repeat(servicio.calificacion)}",
                     color = Color.Gray,
                     fontSize = 14.sp
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
             TextButton(
-                onClick = { navController.navigate(Ruta.PROVIDER_PROFILE_SCREEN) }
+                onClick = { navController.navigate("${Ruta.PROVIDER_PROFILE_SCREEN}/${servicio.idServicio}")  }
             ) {
                 Text(text = "Ver más", color = Color.Blue)
             }

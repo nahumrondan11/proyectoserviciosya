@@ -38,7 +38,7 @@ import pe.idat.proyectoserviciosya.ui.theme.AppproyectoserviciosyaTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val floatingButtonViewModel: FloatingButtonViewModel by viewModels()
+    val floatingButtonViewModel: FloatingButtonViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -115,8 +115,17 @@ fun AppNavigation(navController: NavHostController, floatingButtonViewModel: Flo
         composable(Ruta.USER_PROFILE_SCREEN) {
             UserProfileScreen(navController, floatingButtonViewModel)
         }
-        composable(Ruta.PROVIDER_PROFILE_SCREEN) {
-            ProviderProfileScreen(navController, floatingButtonViewModel)
+        composable("${Ruta.PROVIDER_PROFILE_SCREEN}/{idServicio}") { navBackStackEntry ->
+            val idServicio = navBackStackEntry.arguments?.getString("idServicio")?.toIntOrNull()
+
+            // Verifica que idServicio no sea nulo antes de pasar a la pantalla
+            idServicio?.let {
+                ProviderProfileScreen(
+                    navController = navController,
+                    floatingButtonViewModel = floatingButtonViewModel,
+                    idServicio = it
+                )
+            }
         }
         composable(Ruta.MAIN_SEARCH_SCREEN) {
             SearchServicesScreen(navController, floatingButtonViewModel)
