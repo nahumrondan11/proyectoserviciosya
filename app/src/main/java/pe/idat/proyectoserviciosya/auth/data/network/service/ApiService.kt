@@ -10,6 +10,7 @@ import pe.idat.proyectoserviciosya.auth.data.network.response.PaisesResponse
 import pe.idat.proyectoserviciosya.auth.data.network.response.RegistroResponse
 import pe.idat.proyectoserviciosya.auth.data.network.response.Categoria
 import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentoSer
+import pe.idat.proyectoserviciosya.auth.data.network.response.PaymentInfo
 import pe.idat.proyectoserviciosya.auth.data.network.response.ServiceDetails
 import pe.idat.proyectoserviciosya.core.dataclass.Servicio
 import retrofit2.Call
@@ -51,5 +52,8 @@ interface ApiService {
 
     @POST("api/Pagos/GetServicioInfo/{idServicio}")
     suspend fun enviarPago(@Path("idServicio") idServicio: Int): Response<Unit>
+
+    @GET("api/Pagos/GetServicioInfo/{idServicio}")
+    suspend fun getPaymentInfo(@Path("idServicio")idServicio: Int): Response<PaymentInfo>
 }
 

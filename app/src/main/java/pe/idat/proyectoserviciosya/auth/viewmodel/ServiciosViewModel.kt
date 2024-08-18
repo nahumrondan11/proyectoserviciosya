@@ -12,6 +12,7 @@ import pe.idat.proyectoserviciosya.auth.data.network.retrofitclient.RetrofitClie
 import pe.idat.proyectoserviciosya.auth.data.network.service.ApiService
 import pe.idat.proyectoserviciosya.auth.data.network.response.Categoria
 import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentoSer
+import pe.idat.proyectoserviciosya.auth.data.network.response.PaymentInfo
 import pe.idat.proyectoserviciosya.auth.data.network.response.ServiceDetails
 import pe.idat.proyectoserviciosya.core.dataclass.Servicio
 import retrofit2.Retrofit
@@ -113,4 +114,18 @@ class ServiciosViewModel : ViewModel() {
             }
         }
     }
+
+    suspend fun getPaymentInfo(idServicio: Int): PaymentInfo? {
+        return try {
+            val response = apiService.getPaymentInfo(idServicio)
+            if (response.isSuccessful) {
+                response.body()
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+
 }

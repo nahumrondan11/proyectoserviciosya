@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Transform
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,12 +22,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import pe.idat.proyectoserviciosya.R
+import pe.idat.proyectoserviciosya.auth.data.network.response.PaymentInfo
+import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaymentScreen(navController: NavController) {
+fun PaymentScreen(
+    navController: NavController,
+    idServicio: Int,
+    serviciosViewModel: ServiciosViewModel = viewModel()
+) {
+    var paymentInfo by remember { mutableStateOf<PaymentInfo?>(null) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(idServicio) {
+        scope.launch {
+            paymentInfo = serviciosViewModel.getPaymentInfo(idServicio)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -45,15 +63,17 @@ fun PaymentScreen(navController: NavController) {
                     .background(Color(0xFFEDEDED))
                     .padding(paddingValues)
             ) {
-                ServiceSummary()
-                PaymentForm(navController)
+                paymentInfo?.let { info ->
+                    ServiceSummary(info)
+                    PaymentForm(navController, info)
+                } ?: Text("Cargando...", modifier = Modifier.align(Alignment.CenterHorizontally))
             }
         }
     )
 }
 
 @Composable
-fun ServiceSummary() {
+fun ServiceSummary(paymentInfo: PaymentInfo) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -61,16 +81,16 @@ fun ServiceSummary() {
     ) {
         Text(text = "Resumen del Servicio", fontSize = 20.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
-        Text(text = "Proveedor: Carolina", fontSize = 16.sp)
-        Text(text = "Servicio: Corte de Cabello", fontSize = 16.sp)
-        Text(text = "Fecha: 23/07/2024", fontSize = 16.sp)
-        Text(text = "Costo: S/ 100.00", fontSize = 16.sp)
+        Text(text = "Proveedor: ${paymentInfo.nombreUsuario}", fontSize = 16.sp)
+        Text(text = "Servicio: ${paymentInfo.nombreServicio}", fontSize = 16.sp)
+        Text(text = "Fecha: ${paymentInfo.fechaActual}", fontSize = 16.sp)
+        Text(text = "Costo: S/ ${paymentInfo.costoServicio}", fontSize = 16.sp)
     }
 }
 
 @Composable
-fun PaymentForm(navController: NavController) {
-    var selectedPaymentMethod by remember { mutableStateOf("Tarjeta") }
+fun PaymentForm(navController: NavController, paymentInfo: PaymentInfo) {
+    var selectedPaymentMethod by remember { mutableStateOf(paymentInfo.tiposPago.firstOrNull()?.nombre ?: "Opción no disponible") }
 
     Column(
         modifier = Modifier
@@ -82,27 +102,53 @@ fun PaymentForm(navController: NavController) {
         Text(text = "Forma de Pago", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            PaymentOption(
-                icon = Icons.Default.CreditCard,
-                label = "Tarjeta",
-                selected = selectedPaymentMethod == "Tarjeta"
-            ) { selectedPaymentMethod = "Tarjeta" }
-            PaymentOption(
-                icon = Icons.Default.Money,
-                label = "Efectivo",
-                selected = selectedPaymentMethod == "Efectivo"
-            ) { selectedPaymentMethod = "Efectivo" }
-            PaymentOption(
-                icon = Icons.Default.Check,
-                label = "Yape/Plin",
-                selected = selectedPaymentMethod == "Yape/Plin"
-            ) { selectedPaymentMethod = "Yape/Plin" }
+            paymentInfo.tiposPago.forEach { tipoPago ->
+                PaymentOption(
+                    icon = when (tipoPago.nombre) {
+                        "Transferencia" -> Icons.Default.Transform
+                        "Efectivo" -> Icons.Default.Money
+                        else -> Icons.Default.Check
+                    },
+                    label = tipoPago.nombre,
+                    selected = selectedPaymentMethod == tipoPago.nombre,
+                    onClick = {
+                        selectedPaymentMethod = tipoPago.nombre
+                    }
+                )
+            }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+
+        // Mostrar detalles adicionales según el método de pago seleccionado
         when (selectedPaymentMethod) {
-            "Tarjeta" -> CardPaymentForm(navController)
-            "Efectivo" -> CashPaymentForm(navController)
-            "Yape/Plin" -> YapePlinPaymentForm(navController)
+            "Transferencia" -> {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Cuenta Bancaria: ${paymentInfo.cuentaBancaria}",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+            "Plin_Yape" -> {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Teléfono: ${paymentInfo.telefono}",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+            "Efectivo" -> {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Coordinar con el proveedor. Teléfono: ${paymentInfo.telefono}",
+                    fontSize = 16.sp,
+                    color = Color.Black
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { /* TODO: Implementar lógica de generación de comprobante */ }) {
+            Text(text = "Pagar")
         }
     }
 }
@@ -130,59 +176,5 @@ fun PaymentOption(
             color = if (selected) Color.Blue else Color.Gray,
             fontSize = 14.sp
         )
-    }
-}
-
-@Composable
-fun CardPaymentForm(navController: NavController) {
-    var cardName by remember { mutableStateOf(TextFieldValue("")) }
-    var cardNumber by remember { mutableStateOf(TextFieldValue("")) }
-    var expirationDate by remember { mutableStateOf(TextFieldValue("")) }
-    var cvv by remember { mutableStateOf(TextFieldValue("")) }
-
-    Column {
-        TextField(value = cardName, onValueChange = { cardName = it }, label = { Text("Nombre en la tarjeta") })
-        TextField(value = cardNumber, onValueChange = { cardNumber = it }, label = { Text("Número de tarjeta") })
-        TextField(value = expirationDate, onValueChange = { expirationDate = it }, label = { Text("Fecha de expiración") })
-        TextField(value = cvv, onValueChange = { cvv = it }, label = { Text("Código de seguridad (CVV)") })
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* TODO: Implementar lógica de pago */ }) {
-            Text(text = "Confirmar Pago")
-        }
-    }
-}
-
-@Composable
-fun CashPaymentForm(navController: NavController) {
-    Column {
-        Text(text = "Método de pago seleccionado: Efectivo")
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* TODO: Implementar lógica de generación de comprobante */ }) {
-            Text(text = "Pagar")
-        }
-    }
-}
-
-@Composable
-fun YapePlinPaymentForm(navController: NavController) {
-    Column {
-        Text(text = "Método de pago seleccionado: Yape/Plin")
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(painter = painterResource(id = R.drawable.qr_yape), contentDescription = "QR Yape", modifier = Modifier.size(100.dp))
-                Text(text = "Yape")
-                Text(text = "926 438 306")
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Image(painter = painterResource(id = R.drawable.qr_plin), contentDescription = "QR Plin", modifier = Modifier.size(100.dp))
-                Text(text = "Plin")
-                Text(text = "926 438 306")
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* TODO: Implementar lógica de generación de comprobante */ }) {
-            Text(text = "Pagar")
-        }
     }
 }

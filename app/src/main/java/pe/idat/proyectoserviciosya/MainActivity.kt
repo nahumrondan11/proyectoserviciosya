@@ -130,9 +130,11 @@ fun AppNavigation(navController: NavHostController, floatingButtonViewModel: Flo
         composable(Ruta.MAIN_SEARCH_SCREEN) {
             SearchServicesScreen(navController, floatingButtonViewModel)
         }
-        composable(Ruta.PAGO_SCREEN) {
-            PaymentScreen(navController)
+        composable("${Ruta.PAGO_SCREEN}/{idServicio}") { backStackEntry ->
+            val idServicio = backStackEntry.arguments?.getString("idServicio")?.toInt() ?: 0
+            PaymentScreen(navController, idServicio)
         }
+
         composable(Ruta.VER_CAL_RES_SCREEN) {
             ProviderRatingsReviewsScreen(navController, floatingButtonViewModel)
         }
