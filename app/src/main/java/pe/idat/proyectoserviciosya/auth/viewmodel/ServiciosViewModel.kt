@@ -5,9 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pe.idat.proyectoserviciosya.auth.data.network.request.BuscarServiciosRequest
-import pe.idat.proyectoserviciosya.auth.data.network.response.Departamento
+import pe.idat.proyectoserviciosya.auth.data.network.request.ConfirmarPagoRequest
 import pe.idat.proyectoserviciosya.auth.data.network.retrofitclient.RetrofitClient.apiService
 import pe.idat.proyectoserviciosya.auth.data.network.service.ApiService
 import pe.idat.proyectoserviciosya.auth.data.network.response.Categoria
@@ -15,6 +17,7 @@ import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentoSer
 import pe.idat.proyectoserviciosya.auth.data.network.response.PaymentInfo
 import pe.idat.proyectoserviciosya.auth.data.network.response.ServiceDetails
 import pe.idat.proyectoserviciosya.core.dataclass.Servicio
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -115,6 +118,7 @@ class ServiciosViewModel : ViewModel() {
         }
     }
 
+
     suspend fun getPaymentInfo(idServicio: Int): PaymentInfo? {
         return try {
             val response = apiService.getPaymentInfo(idServicio)
@@ -125,6 +129,22 @@ class ServiciosViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             null
+        }
+    }
+
+    fun confirmarPago(idUsuario: Int, idServicio: Int, idTipoOpcionPago: Int, onSuccess: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val request = ConfirmarPagoRequest(idUsuario, idServicio, idTipoOpcionPago)
+                val response = api.confirmarPago(request)
+                if (response.isSuccessful) {
+                    onSuccess()
+                } else {
+                    onError("Error al confirmar el pago: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Error desconocido")
+            }
         }
     }
 

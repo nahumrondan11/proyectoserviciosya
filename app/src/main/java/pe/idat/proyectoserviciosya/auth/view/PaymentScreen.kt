@@ -1,13 +1,15 @@
 package pe.idat.proyectoserviciosya.auth.view
 
-import androidx.compose.foundation.Image
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Money
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Transform
@@ -17,15 +19,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import pe.idat.proyectoserviciosya.R
 import pe.idat.proyectoserviciosya.auth.data.network.response.PaymentInfo
 import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
 
@@ -38,6 +37,7 @@ fun PaymentScreen(
 ) {
     var paymentInfo by remember { mutableStateOf<PaymentInfo?>(null) }
     val scope = rememberCoroutineScope()
+    val idUsuario = 100  // Suponiendo que idUsuario se obtiene de algún lugar
 
     LaunchedEffect(idServicio) {
         scope.launch {
@@ -50,7 +50,7 @@ fun PaymentScreen(
             TopAppBar(
                 title = { Text("Pago Seguro") },
                 actions = {
-                    IconButton(onClick = { /* TODO: Implementar opciones */ }) {
+                    IconButton(onClick = { /* Opciones adicionales */ }) {
                         Icon(imageVector = Icons.Default.MoreVert, contentDescription = "Menu")
                     }
                 }
@@ -65,7 +65,7 @@ fun PaymentScreen(
             ) {
                 paymentInfo?.let { info ->
                     ServiceSummary(info)
-                    PaymentForm(navController, info)
+                    PaymentForm(navController, info, idServicio, idUsuario, serviciosViewModel)
                 } ?: Text("Cargando...", modifier = Modifier.align(Alignment.CenterHorizontally))
             }
         }
@@ -89,7 +89,13 @@ fun ServiceSummary(paymentInfo: PaymentInfo) {
 }
 
 @Composable
-fun PaymentForm(navController: NavController, paymentInfo: PaymentInfo) {
+fun PaymentForm(
+    navController: NavController,
+    paymentInfo: PaymentInfo,
+    idServicio: Int,
+    idUsuario: Int,
+    serviciosViewModel: ServiciosViewModel
+) {
     var selectedPaymentMethod by remember { mutableStateOf(paymentInfo.tiposPago.firstOrNull()?.nombre ?: "Opción no disponible") }
 
     Column(
@@ -147,7 +153,20 @@ fun PaymentForm(navController: NavController, paymentInfo: PaymentInfo) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { /* TODO: Implementar lógica de generación de comprobante */ }) {
+        Button(onClick = {
+            val selectedTipoOpcionPago = paymentInfo.tiposPago.find { it.nombre == selectedPaymentMethod }?.idTipoOpcionPago
+            if (selectedTipoOpcionPago != null) {
+                serviciosViewModel.confirmarPago(
+                    idUsuario = idUsuario,
+                    idServicio = idServicio,
+                    idTipoOpcionPago = selectedTipoOpcionPago,
+                    onSuccess = { /* Manejar el éxito */ },
+                    onError = { errorMessage -> /* Manejar el error */ }
+                )
+            } else {
+                // Manejar el caso en que no haya una opción seleccionada válida
+            }
+        }) {
             Text(text = "Pagar")
         }
     }

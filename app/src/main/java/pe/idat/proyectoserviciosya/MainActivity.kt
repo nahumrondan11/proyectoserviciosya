@@ -33,12 +33,14 @@ import dagger.hilt.android.AndroidEntryPoint
 import pe.idat.proyectoserviciosya.auth.view.*
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
 import pe.idat.proyectoserviciosya.auth.viewmodel.LoginViewModel
+import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 import pe.idat.proyectoserviciosya.ui.theme.AppproyectoserviciosyaTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     val floatingButtonViewModel: FloatingButtonViewModel by viewModels()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -2,8 +2,8 @@ package pe.idat.proyectoserviciosya.auth.data.network.service
 
 import pe.idat.proyectoserviciosya.auth.data.network.request.BuscarServiciosRequest
 import pe.idat.proyectoserviciosya.auth.data.network.request.LoginRequest
+import pe.idat.proyectoserviciosya.auth.data.network.request.ConfirmarPagoRequest
 import pe.idat.proyectoserviciosya.auth.data.network.request.RegistroRequest
-import pe.idat.proyectoserviciosya.auth.data.network.response.Departamento
 import pe.idat.proyectoserviciosya.auth.data.network.response.DepartamentosResponse
 import pe.idat.proyectoserviciosya.auth.data.network.response.LoginResponse
 import pe.idat.proyectoserviciosya.auth.data.network.response.PaisesResponse
@@ -55,5 +55,8 @@ interface ApiService {
 
     @GET("api/Pagos/GetServicioInfo/{idServicio}")
     suspend fun getPaymentInfo(@Path("idServicio")idServicio: Int): Response<PaymentInfo>
+
+    @POST("api/Pagos/ConfirmarPago")
+    suspend fun confirmarPago(@Body request: ConfirmarPagoRequest): Response<Unit>
 }
 
