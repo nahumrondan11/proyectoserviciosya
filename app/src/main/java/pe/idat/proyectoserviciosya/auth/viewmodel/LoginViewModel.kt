@@ -43,7 +43,8 @@ class LoginViewModel @Inject constructor() : ViewModel() {
                 if (response.isSuccessful && response.body()?.mensaje == "Login exitoso") {
                     val idUsuario = response.body()?.usuario?.idusuario
                     if (idUsuario != null){
-                        SessionManager.userId= idUsuario
+                        // Guarda el userId en SessionManager
+                        SessionManager.userId = idUsuario
                     }
                     _loginResult.value = true
                 } else {

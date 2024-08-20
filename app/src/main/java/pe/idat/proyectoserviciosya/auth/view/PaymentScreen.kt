@@ -97,6 +97,8 @@ fun PaymentForm(
     serviciosViewModel: ServiciosViewModel
 ) {
     var selectedPaymentMethod by remember { mutableStateOf(paymentInfo.tiposPago.firstOrNull()?.nombre ?: "Opción no disponible") }
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -160,15 +162,36 @@ fun PaymentForm(
                     idUsuario = idUsuario,
                     idServicio = idServicio,
                     idTipoOpcionPago = selectedTipoOpcionPago,
-                    onSuccess = { /* Manejar el éxito */ },
-                    onError = { errorMessage -> /* Manejar el error */ }
+                    onSuccess = {
+                        dialogMessage = "Servicio contratado con éxito, se envió notificación al vendedor"
+                        showDialog = true
+                    },
+                    onError = { errorMessage ->
+                        dialogMessage = "Error al contratar el servicio: $errorMessage"
+                        showDialog = true
+                    }
                 )
             } else {
-                // Manejar el caso en que no haya una opción seleccionada válida
+                dialogMessage = "No se pudo confirmar el pago. Selecciona un método de pago válido."
+                showDialog = true
             }
         }) {
             Text(text = "Pagar")
         }
+    }
+
+    // Mostrar el AlertDialog cuando se confirme el pago o haya un error
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("OK")
+                }
+            },
+            title = { Text("Confirmación") },
+            text = { Text(dialogMessage) }
+        )
     }
 }
 

@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -16,17 +17,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.launch
 import pe.idat.proyectoserviciosya.R
+import pe.idat.proyectoserviciosya.auth.data.network.response.UserProfileResponse
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
+import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
+import pe.idat.proyectoserviciosya.core.dataclass.SessionManager
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserProfileScreen(navController: NavController, floatingButtonViewModel: FloatingButtonViewModel) {
+fun UserProfileScreen(
+    navController: NavController,
+    floatingButtonViewModel: FloatingButtonViewModel,
+    serviciosViewModel: ServiciosViewModel = viewModel()
+) {
+    val userId = SessionManager.userId
+    val userProfile by serviciosViewModel.userProfile.observeAsState()
+    val loading by serviciosViewModel.loading.observeAsState(initial = true)
+
+    LaunchedEffect(userId) {
+        userId?.let {
+            serviciosViewModel.getPerfilUser(it)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -77,20 +98,38 @@ fun UserProfileScreen(navController: NavController, floatingButtonViewModel: Flo
             }
         },
         content = { paddingValues ->
-            Box(
+            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color(0xFF2C2C2E))
                     .padding(paddingValues)
             ) {
-                UserProfileContent()
+                item {
+                    if (loading) {
+                        Text(
+                            text = "Cargando datos...",
+                            color = Color.White,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    } else {
+                        userProfile?.let {
+                            UserProfileContent(it)
+                        } ?: run {
+                            Text(
+                                text = "Error al cargar los datos.",
+                                color = Color.Red,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                }
             }
         }
     )
 }
 
 @Composable
-fun UserProfileContent() {
+fun UserProfileContent(profile: UserProfileResponse) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
@@ -100,7 +139,7 @@ fun UserProfileContent() {
     ) {
         // Imagen de perfil
         Image(
-            painter = painterResource(id = R.drawable.profile_picture), // Temp Luego reemplazar con el ID correcto de la imagen BD
+            painter = painterResource(id = R.drawable.profile_picture),
             contentDescription = "Foto de perfil",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -111,25 +150,25 @@ fun UserProfileContent() {
 
         // Nombre del usuario
         Text(
-            text = "Nahum Yonatan",
+            text = profile.nombre,
             color = Color.White,
             fontSize = 24.sp
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Rondan Urbano",
+            text = profile.apellido,
             color = Color.Gray,
             fontSize = 16.sp
         )
         Spacer(modifier = Modifier.height(32.dp))
 
         // Tabla de detalles del usuario
-        UserDetailGrid()
+        UserDetailGrid(profile)
     }
 }
 
 @Composable
-fun UserDetailGrid() {
+fun UserDetailGrid(profile: UserProfileResponse) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
@@ -137,15 +176,19 @@ fun UserDetailGrid() {
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        UserDetailItem(label = "Correo Electrónico", value = "usuario@idat.com")
-        UserDetailItem(label = "Número de Teléfono", value = "+56 7890")
-        UserDetailItem(label = "Dirección", value = "Barrios Altos")
-
+        UserDetailItem(label = "Correo Electrónico", value = profile.correoelectronico)
+        UserDetailItem(label = "Número de Teléfono", value = profile.telefono)
+        UserDetailItem(label = "Dirección", value = profile.direccion)
+        UserDetailItem(label = "Departamento", value = profile.departamentoNombre)
+        UserDetailItem(label = "País", value = profile.paisNombre)
+        UserDetailItem(label = "Número de Cuenta Bancaria", value = profile.cuentabancaria)
+        UserDetailItem(label = "Opciones de Pago", value = profile.opcionesPago?.joinToString(", ") { it.nombre } ?: "Sin datos")
     }
 }
 
+
 @Composable
-fun UserDetailItem(label: String, value: String) {
+fun UserDetailItem(label: String, value: String?) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,7 +200,7 @@ fun UserDetailItem(label: String, value: String) {
             fontSize = 14.sp
         )
         Text(
-            text = value,
+            text = value ?: "Sin datos",
             color = Color.White,
             fontSize = 16.sp
         )

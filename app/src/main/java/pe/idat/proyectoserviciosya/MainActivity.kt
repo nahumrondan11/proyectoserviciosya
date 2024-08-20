@@ -34,6 +34,7 @@ import pe.idat.proyectoserviciosya.auth.view.*
 import pe.idat.proyectoserviciosya.auth.viewmodel.FloatingButtonViewModel
 import pe.idat.proyectoserviciosya.auth.viewmodel.LoginViewModel
 import pe.idat.proyectoserviciosya.auth.viewmodel.ServiciosViewModel
+import pe.idat.proyectoserviciosya.core.dataclass.SessionManager
 import pe.idat.proyectoserviciosya.core.ruteo.Ruta
 import pe.idat.proyectoserviciosya.ui.theme.AppproyectoserviciosyaTheme
 
@@ -44,9 +45,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SessionManager.init(applicationContext)
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
+
             MainScreen(navController, floatingButtonViewModel)
         }
     }

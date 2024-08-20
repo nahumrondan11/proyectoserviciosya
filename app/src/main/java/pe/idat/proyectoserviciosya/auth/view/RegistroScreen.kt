@@ -1,5 +1,6 @@
 package pe.idat.proyectoserviciosya.auth.view
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,7 +39,6 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
     val departamentos by registroViewModel.departamentos.observeAsState(emptyList())
     val registroResult by registroViewModel.registroResult.observeAsState()
 
-    // Valores para los campos de texto
     var nombreCompleto by remember { mutableStateOf("") }
     var nombreUsuario by remember { mutableStateOf("") }
     var pais by remember { mutableStateOf<Pais?>(null) }
@@ -47,19 +47,22 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
     var password by remember { mutableStateOf("") }
     var confirmarPassword by remember { mutableStateOf("") }
 
-    // Obtener los países al cargar la pantalla
     LaunchedEffect(Unit) {
         registroViewModel.obtenerPaises()
     }
 
-    // Navegar a la pantalla de login si el registro fue exitoso
+    LaunchedEffect(pais) {
+        pais?.let {
+            registroViewModel.obtenerDepartamentos(it.idpais)
+        }
+    }
+
     LaunchedEffect(registroResult) {
         if (registroResult == true) {
             navController.navigate(Ruta.LOGIN_SCREEN)
         }
     }
 
-    // Contenido de la pantalla
     Scaffold {
         Box(
             modifier = Modifier
@@ -75,7 +78,6 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
                     .padding(horizontal = 16.dp, vertical = 48.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Campos de registro
                 RegistroField(value = nombreCompleto, onValueChange = { nombreCompleto = it }, label = "Nombre completo")
                 Spacer(modifier = Modifier.height(12.dp))
                 RegistroField(value = nombreUsuario, onValueChange = { nombreUsuario = it }, label = "Nombre de usuario")
@@ -83,21 +85,20 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
                 RegistroField(value = correo, onValueChange = { correo = it }, label = "Correo electrónico")
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Dropdown para seleccionar país
                 DropdownMenuSample(
                     selectedOption = pais,
                     options = paises,
                     onOptionSelected = {
                         pais = it
+                        departamento = null
                         registroViewModel.obtenerDepartamentos(it.idpais)
                     },
                     label = "País",
-                    getText = {it.nombre}
+                    getText = { it.nombre }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Dropdown para seleccionar departamento
                 DropdownMenuSample(
                     selectedOption = departamento,
                     options = departamentos,
@@ -106,14 +107,12 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
                     getText = { it.nombre }
                 )
 
-
                 Spacer(modifier = Modifier.height(12.dp))
                 PasswordField(value = password, onValueChange = { password = it }, label = "Contraseña")
                 Spacer(modifier = Modifier.height(12.dp))
                 PasswordField(value = confirmarPassword, onValueChange = { confirmarPassword = it }, label = "Confirmar contraseña")
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón de registro
                 Button(
                     onClick = {
                         if (password == confirmarPassword && pais != null && departamento != null) {
@@ -140,6 +139,7 @@ fun RegistroScreen(navController: NavController, registroViewModel: RegistroView
     }
 }
 
+
 @Composable
 fun <T> DropdownMenuSample(
     selectedOption: T?,
@@ -155,36 +155,37 @@ fun <T> DropdownMenuSample(
             .fillMaxWidth()
             .background(Color.White)
             .clickable { expanded = true }
-            .padding(horizontal = 8.dp) // Reduce el padding para hacer el Dropdown más compacto
+            .padding(horizontal = 8.dp)
     ) {
         Text(
             text = selectedOption?.let { getText(it) } ?: label,
-            modifier = Modifier.padding(8.dp), // Reduce el padding del texto dentro del Dropdown
+            modifier = Modifier.padding(8.dp),
             color = Color.Gray,
-            fontSize = 14.sp // Disminuye el tamaño de la fuente
+            fontSize = 14.sp
         )
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
-                .fillMaxWidth(0.7f) // Reduce el ancho del Dropdown al 90% del contenedor
+                .fillMaxWidth(0.7f)
                 .background(Color.White)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    text = { Text(getText(option), fontSize = 14.sp) }, // Mantén el tamaño de fuente pequeño
+                    text = { Text(getText(option), fontSize = 14.sp) },
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
                     },
                     modifier = Modifier
-                        .padding(vertical = 2.dp) // Reduce el espacio entre los ítems
+                        .padding(vertical = 2.dp)
                         .fillMaxWidth()
                 )
             }
         }
     }
 }
+
 
 
 
